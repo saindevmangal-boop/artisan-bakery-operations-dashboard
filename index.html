@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artisan Bakery Operations Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand-panel">
+        <img src="bakery-logo.jpg" alt="Artisan Bakery logo" class="brand-logo" />
+        <div>
+          <p class="eyebrow">Artisan Bakery</p>
+          <h1>Operations dashboard</h1>
+        </div>
+      </div>
+
+      <nav class="nav-bar" aria-label="Primary navigation">
+        <button class="nav-link active" data-page="dashboard">Dashboard</button>
+        <button class="nav-link" data-page="orders">Orders</button>
+        <button class="nav-link" data-page="inventory">Inventory</button>
+        <button class="nav-link" data-page="add-order">Add Order</button>
+        <button class="nav-link" data-page="reports">Reports</button>
+      </nav>
+    </header>
+
+    <div class="banner-row">
+      <div class="banner banner--status" id="connectionStatus" role="status" aria-live="polite">Checking network status...</div>
+      <div class="banner banner--note">Local-first resilience with instant interactions.</div>
+    </div>
+
+    <main>
+      <section class="page-panel page-panel--active" data-page="dashboard" aria-labelledby="dashboardTitle">
+        <header class="section-header">
+          <div>
+            <p class="panel-label">Home</p>
+            <h2 id="dashboardTitle">Today's bakery summary</h2>
+          </div>
+          <p class="section-copy">Fast access to your orders, inventory, and stock risk metrics in one clean dashboard.</p>
+        </header>
+
+        <div class="grid-cards">
+          <article class="summary-card">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">🧾</span>
+              <p class="summary-card__label">Total Orders</p>
+            </div>
+            <p class="summary-card__value" id="dashboardTotalOrders">0</p>
+          </article>
+          <article class="summary-card">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">⏳</span>
+              <p class="summary-card__label">Pending Orders</p>
+            </div>
+            <p class="summary-card__value" id="dashboardPendingOrders">0</p>
+          </article>
+          <article class="summary-card">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">✅</span>
+              <p class="summary-card__label">Completed Orders</p>
+            </div>
+            <p class="summary-card__value" id="dashboardCompletedOrders">0</p>
+          </article>
+          <article class="summary-card summary-card--alert">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">⚠️</span>
+              <p class="summary-card__label">Low Stock Items</p>
+            </div>
+            <p class="summary-card__value" id="dashboardLowStock">0</p>
+          </article>
+        </div>
+
+        <div class="section-block">
+          <h3>Today's action</h3>
+          <p id="dashboardStatusText" class="section-copy">Keep the bakery moving by monitoring orders and stock closely.</p>
+        </div>
+      </section>
+
+      <section class="page-panel" data-page="orders" aria-labelledby="ordersTitle">
+        <header class="section-header">
+          <div>
+            <p class="panel-label">Orders</p>
+            <h2 id="ordersTitle">Order management</h2>
+          </div>
+          <label class="search-group" for="ordersSearch">
+            <span class="sr-only">Search orders</span>
+            <input id="ordersSearch" type="search" placeholder="Search by customer, product, or status" aria-describedby="ordersSearchHelp" />
+          </label>
+        </header>
+        <p id="ordersSearchHelp" class="helper">Search updates the list as you type.</p>
+
+        <div class="orders-actions">
+          <button type="button" class="button-secondary" id="completeAllButton">Complete all pending</button>
+          <button type="button" class="button-secondary" id="refreshOrdersButton">Refresh view</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table" aria-label="Orders table">
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Product</th>
+                <th scope="col">Qty</th>
+                <th scope="col">Contact</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="ordersEmptyState" hidden>No orders found. Add one from the Add Order page.</div>
+      </section>
+
+      <section class="page-panel" data-page="inventory" aria-labelledby="inventoryTitle">
+        <header class="section-header">
+          <div>
+            <p class="panel-label">Inventory</p>
+            <h2 id="inventoryTitle">Stock overview</h2>
+          </div>
+          <p class="section-copy">Track inventory levels and identify items that need restocking.</p>
+        </header>
+
+        <div class="inventory-grid" id="inventoryList"></div>
+      </section>
+
+      <section class="page-panel" data-page="add-order" aria-labelledby="addOrderTitle">
+        <header class="section-header">
+          <div>
+            <p class="panel-label">Order entry</p>
+            <h2 id="addOrderTitle">Add a customer order</h2>
+          </div>
+          <p class="section-copy">Create customer orders with product selection, contact details, and quantity validation.</p>
+        </header>
+
+        <form class="form-card" id="orderForm" novalidate>
+          <div class="form-grid form-grid--narrow">
+            <label for="customerNameInput">
+              Customer name
+              <input id="customerNameInput" name="customerName" type="text" placeholder="e.g. Emma" aria-required="true" />
+            </label>
+
+            <label for="productSelect">
+              Product
+              <select id="productSelect" aria-required="true"></select>
+            </label>
+
+            <label for="orderQuantityInput">
+              Quantity
+              <input id="orderQuantityInput" name="orderQuantity" type="number" min="1" placeholder="1" aria-required="true" />
+            </label>
+
+            <label for="contactNumberInput">
+              Contact number
+              <input id="contactNumberInput" name="contactNumber" type="tel" placeholder="123-456-7890" aria-required="true" />
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="submitOrderButton">Submit order</button>
+            <button type="button" class="button-secondary" id="cancelOrderButton">Clear form</button>
+          </div>
+
+          <div class="status-area">
+            <p class="status-text" id="orderFormFeedback" role="alert" aria-live="assertive"></p>
+          </div>
+        </form>
+      </section>
+
+      <section class="page-panel" data-page="reports" aria-labelledby="reportsTitle">
+        <header class="section-header">
+          <div>
+            <p class="panel-label">Reports</p>
+            <h2 id="reportsTitle">Business insights</h2>
+          </div>
+          <p class="section-copy">Use quick reports to track sales and inventory health across the day.</p>
+        </header>
+
+        <div class="grid-cards">
+          <article class="summary-card">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">💰</span>
+              <p class="summary-card__label">Daily Sales</p>
+            </div>
+            <p class="summary-card__value" id="reportDailySales">$0</p>
+          </article>
+          <article class="summary-card">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">📦</span>
+              <p class="summary-card__label">Products in stock</p>
+            </div>
+            <p class="summary-card__value" id="reportProductsInStock">0</p>
+          </article>
+          <article class="summary-card">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">⚠️</span>
+              <p class="summary-card__label">Low stock alerts</p>
+            </div>
+            <p class="summary-card__value" id="reportLowStockCount">0</p>
+          </article>
+          <article class="summary-card summary-card--wide">
+            <div class="summary-card__top">
+              <span class="summary-card__icon" aria-hidden="true">📅</span>
+              <p class="summary-card__label">Orders today</p>
+            </div>
+            <p class="summary-card__value" id="reportOrdersToday">0</p>
+          </article>
+        </div>
+
+        <div class="report-panel">
+          <div>
+            <h3>Inventory summary</h3>
+            <p class="section-copy">Low stock items are highlighted for quick restock planning.</p>
+          </div>
+          <ul class="report-list" id="reportInventorySummary"></ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <p>Designed for bakery floor teams to stay productive even during slow networks.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
